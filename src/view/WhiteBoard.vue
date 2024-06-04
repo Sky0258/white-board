@@ -1,11 +1,16 @@
 <template>
   <div>
-    <button @click="{  paintType = 1; }">画任意线</button>
-    <button @click="drawRuler(300,300)">直尺</button><br />
+    <button
+      @click="
+        {
+          paintType = 1;
+        }
+      ">画任意线</button>
+    <button @click="drawRuler(300, 300)">直尺</button><br />
     <canvas ref="canvasRef" width="1200" height="700"></canvas>
   </div>
 </template>
- 
+
 <script setup>
 import { ref, reactive, onMounted } from "vue";
 const canvasRef = ref(null);
@@ -49,19 +54,32 @@ function handlePaintLineEnd() {
 // 记录尺子左上角位置
 const rulerPosition = reactive({
   x: 300,
-  y: 300
+  y: 300,
+});
+
+// 记录上一个尺子的位置，避免叠影
+const preRulerPosition = reactive({
+  x: 300,
+  y: 300,
 });
 
 const distanceToRuler = reactive({
   distanceX: 0,
-  distanceY: 0
-})
+  distanceY: 0,
+});
+
+const isDragging = ref(false);
 
 function drawRuler(x, y) {
   paintType.value = 2;
+  // 把之前的尺子删掉
+  ctx.fillStyle = "#e0e0e0";
+  ctx.fillRect(preRulerPosition.x - 10, preRulerPosition.y - 10, 420, 90);
 
-  // ctx.clearRect(x, y, 400, 70);
-  ctx.fillStyle="white";
+  preRulerPosition.x = x;
+  preRulerPosition.y = y;
+
+  ctx.fillStyle = "white";
   ctx.fillRect(x, y, 400, 70);
 
   // 绘制横向刻度
@@ -80,25 +98,22 @@ function drawRuler(x, y) {
   }
 }
 
-
 function handleMoveRuler(e) {
-  const { x, y } = rulerPosition;
   const { distanceX, distanceY } = distanceToRuler;
-  
-  if(checkOnRuler(e)) {
-    console.log('要重画尺子', x + (e.offsetX - distanceX), y + (e.offsetY - distanceY));
-    rulerPosition.x = x + (e.offsetX - distanceX);
-    rulerPosition.y = y + (e.offsetY - distanceY);
+
+  if (isDragging.value) {
+    rulerPosition.x = e.offsetX - distanceX;
+    rulerPosition.y = e.offsetY - distanceY;
     drawRuler(rulerPosition.x, rulerPosition.y);
   }
 }
 
 function checkOnRuler(e) {
   const { x, y } = rulerPosition;
-  if(e.offsetX >= x && e.offsetX <= x + 400 && e.offsetY >= y && e.offsetY <= y + 70) {
+  if (e.offsetX >= x && e.offsetX <= x + 400 && e.offsetY >= y && e.offsetY <= y + 70) {
     distanceToRuler.distanceX = e.offsetX - x;
     distanceToRuler.distanceY = e.offsetY - y;
-    console.log('在尺子上');
+    isDragging.value = true;
     return true;
   }
   return false;
@@ -109,11 +124,15 @@ function checkOnRuler(e) {
 //   }
 // }
 
+function handleMoveRulerEnd() {
+  isDragging.value = false;
+}
+
 onMounted(() => {
   initCanvas();
   // 鼠标按下绘图
   canvas.onmousedown = (e) => {
-    switch(paintType.value) {
+    switch (paintType.value) {
       case 1:
         handlePaintLineStart(e);
         break;
@@ -128,7 +147,7 @@ onMounted(() => {
     // if (paintType.value == 1) {
     //   handlePaintLineMove(e);
     // }
-    switch(paintType.value) {
+    switch (paintType.value) {
       case 1:
         handlePaintLineMove(e);
         break;
@@ -140,8 +159,13 @@ onMounted(() => {
 
   // 鼠标抬起停止绘图
   canvas.onmouseup = () => {
-    if (paintType.value == 1) {
-      handlePaintLineEnd();
+    switch (paintType.value) {
+      case 1:
+        handlePaintLineEnd();
+        break;
+      case 2:
+        handleMoveRulerEnd();
+        break;
     }
   };
 });
