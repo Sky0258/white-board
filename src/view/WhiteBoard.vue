@@ -1,15 +1,7 @@
 <template>
   <div>
-    <button
-      @click="
-        {
-          paintType = 1;
-        }
-      "
-    >
-      画任意线
-    </button>
-    <button @click="handleShowRuler(300, 300)">直尺</button><br />
+    <button @click="{ paintType = 1;}">画任意线</button>
+    <button @click="handleShowRuler(rulerPosition.x, rulerPosition.y)">直尺</button><br />
     <canvas ref="canvasRef" width="1200" height="700"></canvas>
   </div>
 </template>
@@ -94,8 +86,6 @@ function checkOnRuler(e) {
 function handleShowRuler(x, y) {
   isShowRuler.value = !isShowRuler.value;
   paintType.value = 2;
-  rulerPosition.x = 300;
-  rulerPosition.y = 300;
   isDragging.value = false;
   drawRuler(x, y);
 }
