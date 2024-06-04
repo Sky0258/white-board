@@ -41,7 +41,7 @@ function handlePaintLineStart(e) {
 }
 
 function handlePaintLineMove(e) {
-  if (flag) {
+  if (flag && !checkOnRuler(e)) {
     ctx.lineTo(e.offsetX, e.offsetY);
     ctx.stroke();
   }
@@ -85,17 +85,18 @@ function checkOnRuler(e) {
     distanceToRuler.distanceX = e.offsetX - x;
     distanceToRuler.distanceY = e.offsetY - y;
     isDragging.value = true;
-    paintType.value = 2;
     return true;
-  } else {
-    paintType.value = 1;
   }
   return false;
 }
 
-// 显示尺子 
+// 显示尺子
 function handleShowRuler(x, y) {
   isShowRuler.value = !isShowRuler.value;
+  paintType.value = 2;
+  rulerPosition.x = 300;
+  rulerPosition.y = 300;
+  isDragging.value = false;
   drawRuler(x, y);
 }
 
@@ -108,7 +109,6 @@ function drawRuler(x, y) {
   if (isShowRuler.value) {
     preRulerPosition.x = x;
     preRulerPosition.y = y;
-
     ctx.fillStyle = "white";
     ctx.fillRect(x, y, 400, 70);
 
@@ -207,6 +207,7 @@ function handleRulerLineMove(e) {
 function handleRulerLineEnd() {
   ctx.closePath();
   flag = false;
+  paintType.value = 2;
 }
 
 onMounted(() => {
@@ -214,16 +215,16 @@ onMounted(() => {
   // 鼠标按下绘图
   canvas.onmousedown = (e) => {
     if (isShowRuler.value) {
-      checkOnRuler(e) || handleRulerAround(e);
+      handleRulerAround(e);
     }
 
     switch (paintType.value) {
       case 1:
         handlePaintLineStart(e);
         break;
-      // case 2:
-      //   checkOnRuler(e);
-      //   break;
+      case 2:
+        checkOnRuler(e);
+        break;
       case 3:
         handleRulerLineStart(e);
         break;
