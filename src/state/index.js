@@ -1,11 +1,17 @@
+// currentPathStore  historyPathStore
 const pathStore = [];
 
-export function getPathStore() {
-    return JSON.parse(localStorage.pathStore);
+export function getPathStore(storeName) {
+    return localStorage.getItem(storeName) ? JSON.parse(localStorage[storeName]) : null;
 }
 
-export function addDataToStore(targetList) {
+export function addDataToStore(targetList, storeName) {
     pathStore.push(targetList);
-    localStorage.getItem('pathStore') ?  localStorage.pathStore = JSON.stringify(pathStore) : localStorage.setItem('pathStore', JSON.stringify(pathStore));
-    console.log(JSON.parse(localStorage.pathStore));
+    setLocalStorageValue(storeName, JSON.stringify(pathStore));
 }
+
+// 工具
+export function setLocalStorageValue(key, value) {
+    localStorage.getItem(key) ? localStorage[key] = value : localStorage.setItem(key, value);
+}
+

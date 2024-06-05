@@ -19,13 +19,14 @@
 
 <script setup>
 import { ref, reactive, onMounted } from "vue";
-import { getPathStore, addDataToStore } from "../state/index";
+import { getPathStore, addDataToStore, setLocalStorageValue } from "../state/index";
 const canvasRef = ref(null);
 let canvas = null;
 let ctx = null;
 let flag = false;
 let paintType = ref(1);
-let paintHistory = ref(false);
+// 判断是否是绘制当前界面的历史线（判断用不用 push 进当前的 pathStore)
+let paintCurrentPathHistory = ref(false);
 const linePath = [];
 
 // 初始化 canvas
@@ -44,7 +45,7 @@ function handlePaintLineStart(e) {
   flag = true;
   ctx.beginPath();
   ctx.moveTo(e.offsetX, e.offsetY);
-  !paintHistory.value && linePath.push({
+  !paintCurrentPathHistory.value && linePath.push({
     offsetX: e.offsetX,
     offsetY: e.offsetY,
   });
@@ -53,7 +54,7 @@ function handlePaintLineStart(e) {
 function handlePaintLineMove(e) {
   if (flag && !checkOnRuler(e)) {
     ctx.lineTo(e.offsetX, e.offsetY);
-    !paintHistory.value && linePath.push({
+    !paintCurrentPathHistory.value && linePath.push({
       offsetX: e.offsetX,
       offsetY: e.offsetY,
     });
@@ -63,16 +64,16 @@ function handlePaintLineMove(e) {
 
 function handlePaintLineEnd() {
   ctx.closePath();
-  !paintHistory.value && addDataToStore([...linePath]);
+  !paintCurrentPathHistory.value && addDataToStore([...linePath], 'currentPathStore');
   linePath.length = 0;
   flag = false;
 }
 
-function paintHistoryLine() {
-  paintHistory.value = true;
+// 4. 暂存模块
+function paintPathLine(storeName) {
   ctx.lineWidth = 5;
   ctx.strokeStyle = "blue";
-  const oldPath = getPathStore('pathStore');
+  const oldPath = getPathStore(storeName);
   oldPath.forEach((item) => {
     handlePaintLineStart(item[0]);
     for (let i = 0; i < item.length; i++) {
@@ -80,10 +81,21 @@ function paintHistoryLine() {
     }
     handlePaintLineEnd();
   });
-
   ctx.lineWidth = 1;
   ctx.strokeStyle = "black";
-  paintHistory.value = false;
+}
+
+function paintHistoryLine() {
+  // 开启线条推入
+  paintCurrentPathHistory.value = false;
+  paintPathLine('historyPathStore');
+}
+
+// 刷新前缓存
+function saveHistoryPath() {
+  const currentPath = getPathStore('currentPathStore');
+  currentPath && setLocalStorageValue('historyPathStore', JSON.stringify(currentPath));
+  setLocalStorageValue('currentPathStore', null)
 }
 
 // 2.移动尺子模块
@@ -175,7 +187,11 @@ function handleRulerMove(e) {
 
 function handleMoveRulerEnd() {
   isDragging.value = false;
-  paintHistoryLine();
+  // 关闭线条推入
+  paintCurrentPathHistory.value = true;
+  paintPathLine('currentPathStore');
+  // 重置
+  paintCurrentPathHistory.value = false;
 }
 
 // 3.沿着尺子画线模块
@@ -244,6 +260,7 @@ function handleRulerLineEnd() {
 }
 
 onMounted(() => {
+  saveHistoryPath();
   initCanvas();
   // 鼠标按下绘图
   canvas.onmousedown = (e) => {
