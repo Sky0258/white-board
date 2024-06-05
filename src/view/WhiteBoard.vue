@@ -52,7 +52,9 @@ function initCanvas() {
 
 // 1.任意线模块
 function handlePaintLineStart(e) {
+  console.log(isShowRuler.value, handleRulerAround(e));
   if (isShowRuler.value && handleRulerAround(e)) {
+    console.log('在直线附近');
     handleRulerLineStart(e);
     return;
   }
@@ -130,6 +132,8 @@ function paintPathLine(storeName) {
         );
       }
       paintLineEnd(ctx, paintCurrentPathHistory.value, linePath);
+      linePath.length = 0;
+      console.log('结束123');
     });
   ctx.lineWidth = 1;
   ctx.strokeStyle = "black";
@@ -275,6 +279,7 @@ function handleRulerAround(e) {
     e.offsetY <= rulerPosition.y
   ) {
     paintType.value = 3;
+    return true;
   }
 }
 
@@ -285,6 +290,7 @@ function getLineEquation() {
   rulerEquation.b = parseFloat(
     (rulerPosition.y - rulerEquation.k * rulerPosition.x).toFixed(2)
   );
+  console.log(rulerEquation, 'rulerEquation');
 }
 
 // 获取垂直点
@@ -303,6 +309,7 @@ function countVerticalPoint(x, y) {
 
 // 开始画吸附直线
 function handleRulerLineStart(e) {
+  console.log('在这里');
   getLineEquation();
   const targetPoint = countVerticalPoint(e.offsetX, e.offsetY);
   paintLineStart(
@@ -340,6 +347,7 @@ function handleRulerLineEnd() {
   // 替换
   // ctx.closePath();
   paintLineEnd(ctx, paintCurrentPathHistory.value, linePath);
+  linePath.length = 0;
   flag = false;
   paintType.value = 1;
 }
