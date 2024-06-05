@@ -12,7 +12,8 @@
     <button @click="handleShowRuler(rulerPosition.x, rulerPosition.y)">
       直尺
     </button>
-    <button @click="paintHistoryLine">绘制历史线</button><br />
+    <button @click="paintHistoryLine">绘制历史线</button>
+    <button @click="change">改数据</button><br />
     <canvas ref="canvasRef" width="1200" height="700"></canvas>
   </div>
 </template>
@@ -30,6 +31,23 @@ import {
   paintLineMove,
   paintLineEnd,
 } from "../utils/paintLine";
+
+
+
+
+import { changeData } from '../modules/test'
+const msg = ref(1);
+function change() {
+  changeData(msg);
+
+  console.log(msg.value);
+}
+
+
+
+
+
+
 const canvasRef = ref(null);
 let canvas = null;
 let ctx = null;
@@ -52,9 +70,7 @@ function initCanvas() {
 
 // 1.任意线模块
 function handlePaintLineStart(e) {
-  console.log(isShowRuler.value, handleRulerAround(e));
   if (isShowRuler.value && handleRulerAround(e)) {
-    console.log('在直线附近');
     handleRulerLineStart(e);
     return;
   }
@@ -112,7 +128,6 @@ function paintPathLine(storeName) {
       }
       paintLineEnd(ctx, paintCurrentPathHistory.value, linePath);
       linePath.length = 0;
-      console.log('结束123');
     });
   ctx.lineWidth = 1;
   ctx.strokeStyle = "black";
@@ -263,7 +278,6 @@ function getLineEquation() {
   rulerEquation.b = parseFloat(
     (rulerPosition.y - rulerEquation.k * rulerPosition.x).toFixed(2)
   );
-  console.log(rulerEquation, 'rulerEquation');
 }
 
 // 获取垂直点
@@ -282,7 +296,6 @@ function countVerticalPoint(x, y) {
 
 // 开始画吸附直线
 function handleRulerLineStart(e) {
-  console.log('在这里');
   getLineEquation();
   const targetPoint = countVerticalPoint(e.offsetX, e.offsetY);
   paintLineStart(
