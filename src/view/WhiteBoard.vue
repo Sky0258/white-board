@@ -19,7 +19,17 @@
 
 <script setup>
 import { ref, reactive, onMounted } from "vue";
-import { getPathStore, addDataToStore, setLocalStorageValue } from "../state/index";
+import {
+  getPathStore,
+  // addDataToStore,
+  setLocalStorageValue,
+} from "../state/index";
+
+import {
+  paintLineStart,
+  paintLineMove,
+  paintLineEnd,
+} from "../utils/paintLine";
 const canvasRef = ref(null);
 let canvas = null;
 let ctx = null;
@@ -42,29 +52,56 @@ function initCanvas() {
 
 // 1.任意线模块
 function handlePaintLineStart(e) {
+  if (isShowRuler.value && handleRulerAround(e)) {
+    handleRulerLineStart(e);
+    return;
+  }
+
   flag = true;
-  ctx.beginPath();
-  ctx.moveTo(e.offsetX, e.offsetY);
-  !paintCurrentPathHistory.value && linePath.push({
-    offsetX: e.offsetX,
-    offsetY: e.offsetY,
-  });
+  // 替换
+  // ctx.beginPath();
+  // ctx.moveTo(e.offsetX, e.offsetY);
+  paintLineStart(
+    ctx,
+    e.offsetX,
+    e.offsetY,
+    paintCurrentPathHistory.value,
+    linePath
+  );
+  // !paintCurrentPathHistory.value &&
+  //   linePath.push({
+  //     offsetX: e.offsetX,
+  //     offsetY: e.offsetY,
+  //   });
 }
 
 function handlePaintLineMove(e) {
   if (flag && !checkOnRuler(e)) {
-    ctx.lineTo(e.offsetX, e.offsetY);
-    !paintCurrentPathHistory.value && linePath.push({
-      offsetX: e.offsetX,
-      offsetY: e.offsetY,
-    });
-    ctx.stroke();
+    // 替换
+    // ctx.lineTo(e.offsetX, e.offsetY);
+    // ctx.stroke();
+
+    paintLineMove(
+      ctx,
+      e.offsetX,
+      e.offsetY,
+      paintCurrentPathHistory.value,
+      linePath
+    );
+    // !paintCurrentPathHistory.value &&
+    //   linePath.push({
+    //     offsetX: e.offsetX,
+    //     offsetY: e.offsetY,
+    //   });
   }
 }
 
 function handlePaintLineEnd() {
-  ctx.closePath();
-  !paintCurrentPathHistory.value && addDataToStore([...linePath], 'currentPathStore');
+  // 替换
+  // ctx.closePath();
+  paintLineEnd(ctx, paintCurrentPathHistory.value, linePath);
+  // !paintCurrentPathHistory.value &&
+  //   addDataToStore([...linePath], "currentPathStore");
   linePath.length = 0;
   flag = false;
 }
@@ -74,13 +111,26 @@ function paintPathLine(storeName) {
   ctx.lineWidth = 5;
   ctx.strokeStyle = "blue";
   const oldPath = getPathStore(storeName);
-  oldPath.forEach((item) => {
-    handlePaintLineStart(item[0]);
-    for (let i = 0; i < item.length; i++) {
-      handlePaintLineMove(item[i]);
-    }
-    handlePaintLineEnd();
-  });
+  oldPath &&
+    oldPath.forEach((item) => {
+      paintLineStart(
+        ctx,
+        item[0].offsetX,
+        item[0].offsetY,
+        paintCurrentPathHistory.value,
+        linePath
+      );
+      for (let i = 0; i < item.length; i++) {
+        paintLineMove(
+          ctx,
+          item[i].offsetX,
+          item[i].offsetY,
+          paintCurrentPathHistory.value,
+          linePath
+        );
+      }
+      paintLineEnd(ctx, paintCurrentPathHistory.value, linePath);
+    });
   ctx.lineWidth = 1;
   ctx.strokeStyle = "black";
 }
@@ -88,14 +138,15 @@ function paintPathLine(storeName) {
 function paintHistoryLine() {
   // 开启线条推入
   paintCurrentPathHistory.value = false;
-  paintPathLine('historyPathStore');
+  paintPathLine("historyPathStore");
 }
 
 // 刷新前缓存
 function saveHistoryPath() {
-  const currentPath = getPathStore('currentPathStore');
-  currentPath && setLocalStorageValue('historyPathStore', JSON.stringify(currentPath));
-  setLocalStorageValue('currentPathStore', null)
+  const currentPath = getPathStore("currentPathStore");
+  currentPath &&
+    setLocalStorageValue("historyPathStore", JSON.stringify(currentPath));
+  setLocalStorageValue("currentPathStore", null);
 }
 
 // 2.移动尺子模块
@@ -139,9 +190,18 @@ function checkOnRuler(e) {
 // 显示尺子
 function handleShowRuler(x, y) {
   isShowRuler.value = !isShowRuler.value;
+  // isShowRuler.value = true;
   paintType.value = 2;
   isDragging.value = false;
   drawRuler(x, y);
+
+  if (!isShowRuler.value) {
+    // 关闭线条推入
+    paintCurrentPathHistory.value = true;
+    paintPathLine("currentPathStore");
+    // 重置线条推入设置
+    paintCurrentPathHistory.value = false;
+  }
 }
 
 // 画尺子
@@ -181,17 +241,24 @@ function handleRulerMove(e) {
   if (isDragging.value) {
     rulerPosition.x = e.offsetX - distanceX;
     rulerPosition.y = e.offsetY - distanceY;
+
+    // 关闭线条推入
+    paintCurrentPathHistory.value = true;
+    paintPathLine("currentPathStore");
+    // 重置线条推入设置
+    paintCurrentPathHistory.value = false;
     drawRuler(rulerPosition.x, rulerPosition.y);
   }
 }
 
 function handleMoveRulerEnd() {
   isDragging.value = false;
-  // 关闭线条推入
-  paintCurrentPathHistory.value = true;
-  paintPathLine('currentPathStore');
-  // 重置
-  paintCurrentPathHistory.value = false;
+  paintType.value = 2;
+  // // 关闭线条推入
+  // paintCurrentPathHistory.value = true;
+  // paintPathLine('currentPathStore');
+  // // 重置线条推入设置
+  // paintCurrentPathHistory.value = false;
 }
 
 // 3.沿着尺子画线模块
@@ -238,8 +305,16 @@ function countVerticalPoint(x, y) {
 function handleRulerLineStart(e) {
   getLineEquation();
   const targetPoint = countVerticalPoint(e.offsetX, e.offsetY);
-  ctx.beginPath();
-  ctx.moveTo(targetPoint.x, targetPoint.y);
+  paintLineStart(
+    ctx,
+    targetPoint.x,
+    targetPoint.y,
+    paintCurrentPathHistory.value,
+    linePath
+  );
+  // 替换
+  // ctx.beginPath();
+  // ctx.moveTo(targetPoint.x, targetPoint.y);
   flag = true;
 }
 
@@ -247,16 +322,26 @@ function handleRulerLineStart(e) {
 function handleRulerLineMove(e) {
   if (flag) {
     const targetPoint = countVerticalPoint(e.offsetX, e.offsetY);
-    ctx.lineTo(targetPoint.x, targetPoint.y);
-    ctx.stroke();
+    paintLineMove(
+      ctx,
+      targetPoint.x,
+      targetPoint.y,
+      paintCurrentPathHistory.value,
+      linePath
+    );
+    // 替换
+    // ctx.lineTo(targetPoint.x, targetPoint.y);
+    // ctx.stroke();
   }
 }
 
 // 结束吸附直线
 function handleRulerLineEnd() {
-  ctx.closePath();
+  // 替换
+  // ctx.closePath();
+  paintLineEnd(ctx, paintCurrentPathHistory.value, linePath);
   flag = false;
-  paintType.value = 2;
+  paintType.value = 1;
 }
 
 onMounted(() => {
@@ -264,9 +349,9 @@ onMounted(() => {
   initCanvas();
   // 鼠标按下绘图
   canvas.onmousedown = (e) => {
-    if (isShowRuler.value) {
-      handleRulerAround(e);
-    }
+    // if (isShowRuler.value) {
+    //   handleRulerAround(e);
+    // }
 
     switch (paintType.value) {
       case 1:
@@ -275,9 +360,9 @@ onMounted(() => {
       case 2:
         checkOnRuler(e);
         break;
-      case 3:
-        handleRulerLineStart(e);
-        break;
+      // case 3:
+      //   handleRulerLineStart(e);
+      //   break;
     }
   };
 
