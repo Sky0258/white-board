@@ -60,9 +60,6 @@ function handlePaintLineStart(e) {
   }
 
   flag = true;
-  // 替换
-  // ctx.beginPath();
-  // ctx.moveTo(e.offsetX, e.offsetY);
   paintLineStart(
     ctx,
     e.offsetX,
@@ -70,19 +67,10 @@ function handlePaintLineStart(e) {
     paintCurrentPathHistory.value,
     linePath
   );
-  // !paintCurrentPathHistory.value &&
-  //   linePath.push({
-  //     offsetX: e.offsetX,
-  //     offsetY: e.offsetY,
-  //   });
 }
 
 function handlePaintLineMove(e) {
   if (flag && !checkOnRuler(e)) {
-    // 替换
-    // ctx.lineTo(e.offsetX, e.offsetY);
-    // ctx.stroke();
-
     paintLineMove(
       ctx,
       e.offsetX,
@@ -90,20 +78,11 @@ function handlePaintLineMove(e) {
       paintCurrentPathHistory.value,
       linePath
     );
-    // !paintCurrentPathHistory.value &&
-    //   linePath.push({
-    //     offsetX: e.offsetX,
-    //     offsetY: e.offsetY,
-    //   });
   }
 }
 
 function handlePaintLineEnd() {
-  // 替换
-  // ctx.closePath();
   paintLineEnd(ctx, paintCurrentPathHistory.value, linePath);
-  // !paintCurrentPathHistory.value &&
-  //   addDataToStore([...linePath], "currentPathStore");
   linePath.length = 0;
   flag = false;
 }
@@ -194,7 +173,6 @@ function checkOnRuler(e) {
 // 显示尺子
 function handleShowRuler(x, y) {
   isShowRuler.value = !isShowRuler.value;
-  // isShowRuler.value = true;
   paintType.value = 2;
   isDragging.value = false;
   drawRuler(x, y);
@@ -258,11 +236,6 @@ function handleRulerMove(e) {
 function handleMoveRulerEnd() {
   isDragging.value = false;
   paintType.value = 2;
-  // // 关闭线条推入
-  // paintCurrentPathHistory.value = true;
-  // paintPathLine('currentPathStore');
-  // // 重置线条推入设置
-  // paintCurrentPathHistory.value = false;
 }
 
 // 3.沿着尺子画线模块
@@ -319,9 +292,6 @@ function handleRulerLineStart(e) {
     paintCurrentPathHistory.value,
     linePath
   );
-  // 替换
-  // ctx.beginPath();
-  // ctx.moveTo(targetPoint.x, targetPoint.y);
   flag = true;
 }
 
@@ -336,9 +306,6 @@ function handleRulerLineMove(e) {
       paintCurrentPathHistory.value,
       linePath
     );
-    // 替换
-    // ctx.lineTo(targetPoint.x, targetPoint.y);
-    // ctx.stroke();
   }
 }
 
@@ -357,10 +324,6 @@ onMounted(() => {
   initCanvas();
   // 鼠标按下绘图
   canvas.onmousedown = (e) => {
-    // if (isShowRuler.value) {
-    //   handleRulerAround(e);
-    // }
-
     switch (paintType.value) {
       case 1:
         handlePaintLineStart(e);
