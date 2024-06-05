@@ -1,19 +1,8 @@
 <template>
   <div>
-    <button
-      @click="
-        {
-          paintType = 1;
-        }
-      "
-    >
-      画任意线
-    </button>
-    <button @click="handleShowRuler(rulerPosition.x, rulerPosition.y)">
-      直尺
-    </button>
-    <button @click="paintHistoryLine">绘制历史线</button>
-    <button @click="change">改数据</button><br />
+    <button @click="{  paintType = 1;}">画任意线</button>
+    <button @click="handleRuler">直尺</button>
+    <button @click="paintHistoryLine">绘制历史线</button><br>
     <canvas ref="canvasRef" width="1200" height="700"></canvas>
   </div>
 </template>
@@ -33,17 +22,7 @@ import {
 } from "../utils/paintLine";
 
 
-
-
-import { changeData } from '../modules/test'
-const msg = ref(1);
-function change() {
-  changeData(msg);
-
-  console.log(msg.value);
-}
-
-
+import { checkOnRuler, handleShowRuler, handleRulerMove, handleMoveRulerEnd } from '../modules/handleMoveRuler'
 
 
 
@@ -86,7 +65,7 @@ function handlePaintLineStart(e) {
 }
 
 function handlePaintLineMove(e) {
-  if (flag && !checkOnRuler(e)) {
+  if (flag && !checkOnRuler(e, rulerPosition)) {
     paintLineMove(
       ctx,
       e.offsetX,
@@ -155,103 +134,10 @@ const rulerPosition = reactive({
   y: 300,
 });
 
-// 记录上一个尺子的位置，避免叠影
-const preRulerPosition = reactive({
-  x: 300,
-  y: 300,
-});
-
-const distanceToRuler = reactive({
-  distanceX: 0,
-  distanceY: 0,
-});
-
-const isDragging = ref(false);
-
-// 判断是否在尺子上
-function checkOnRuler(e) {
-  const { x, y } = rulerPosition;
-  if (
-    e.offsetX >= x &&
-    e.offsetX <= x + 400 &&
-    e.offsetY >= y &&
-    e.offsetY <= y + 70
-  ) {
-    distanceToRuler.distanceX = e.offsetX - x;
-    distanceToRuler.distanceY = e.offsetY - y;
-    isDragging.value = true;
-    return true;
-  }
-  return false;
+function handleRuler() {
+  handleShowRuler(rulerPosition.x, rulerPosition.y, ctx, isShowRuler, paintType, paintCurrentPathHistory, linePath);
 }
 
-// 显示尺子
-function handleShowRuler(x, y) {
-  isShowRuler.value = !isShowRuler.value;
-  paintType.value = 2;
-  isDragging.value = false;
-  drawRuler(x, y);
-
-  if (!isShowRuler.value) {
-    // 关闭线条推入
-    paintCurrentPathHistory.value = true;
-    paintPathLine("currentPathStore");
-    // 重置线条推入设置
-    paintCurrentPathHistory.value = false;
-  }
-}
-
-// 画尺子
-function drawRuler(x, y) {
-  // 把之前的尺子删掉
-  ctx.fillStyle = "#e0e0e0";
-  ctx.fillRect(preRulerPosition.x - 1, preRulerPosition.y, 402, 70);
-
-  if (isShowRuler.value) {
-    preRulerPosition.x = x;
-    preRulerPosition.y = y;
-    ctx.fillStyle = "white";
-    ctx.fillRect(x, y, 400, 70);
-
-    // 绘制横向刻度
-    ctx.strokeStyle = "#D4D2CF";
-    ctx.beginPath();
-    ctx.moveTo(x, y + 1);
-    ctx.lineTo(x + 400, y + 1);
-    ctx.stroke();
-
-    // 绘制竖向刻度
-    for (let i = 0; i <= 400; i += 20) {
-      ctx.beginPath();
-      ctx.moveTo(x + i, y);
-      let yLine = i % 100 == 0 ? 23 : 10;
-      ctx.lineTo(x + i, y + yLine);
-      ctx.stroke();
-    }
-    ctx.strokeStyle = "black";
-  }
-}
-
-function handleRulerMove(e) {
-  const { distanceX, distanceY } = distanceToRuler;
-
-  if (isDragging.value) {
-    rulerPosition.x = e.offsetX - distanceX;
-    rulerPosition.y = e.offsetY - distanceY;
-
-    // 关闭线条推入
-    paintCurrentPathHistory.value = true;
-    paintPathLine("currentPathStore");
-    // 重置线条推入设置
-    paintCurrentPathHistory.value = false;
-    drawRuler(rulerPosition.x, rulerPosition.y);
-  }
-}
-
-function handleMoveRulerEnd() {
-  isDragging.value = false;
-  paintType.value = 2;
-}
 
 // 3.沿着尺子画线模块
 const rulerEquation = reactive({
@@ -342,7 +228,7 @@ onMounted(() => {
         handlePaintLineStart(e);
         break;
       case 2:
-        checkOnRuler(e);
+        checkOnRuler(e, rulerPosition);
         break;
       // case 3:
       //   handleRulerLineStart(e);
@@ -357,7 +243,7 @@ onMounted(() => {
         handlePaintLineMove(e);
         break;
       case 2:
-        handleRulerMove(e);
+        handleRulerMove(e, rulerPosition,ctx, paintCurrentPathHistory, linePath, isShowRuler);
         break;
       case 3:
         handleRulerLineMove(e);
@@ -372,7 +258,7 @@ onMounted(() => {
         handlePaintLineEnd();
         break;
       case 2:
-        handleMoveRulerEnd();
+        handleMoveRulerEnd(paintType);
         break;
       case 3:
         handleRulerLineEnd();

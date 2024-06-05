@@ -1,12 +1,5 @@
-// 判断是否在尺子上
-// 记录尺子左上角位置
 import { reactive, ref } from "vue";
 import { paintPathLine } from './handleSave'
-
-const rulerPosition = reactive({
-  x: 300,
-  y: 300,
-});
 
 // 记录上一个尺子的位置，避免叠影
 const preRulerPosition = reactive({
@@ -21,7 +14,8 @@ const distanceToRuler = reactive({
 
 const isDragging = ref(false);
 
-export function checkOnRuler(e) {
+// 判断是否在尺子上
+export function checkOnRuler(e, rulerPosition) {
   const { x, y } = rulerPosition;
   if (e.offsetX >= x && e.offsetX <= x + 400 && e.offsetY >= y && e.offsetY <= y + 70) {
     distanceToRuler.distanceX = e.offsetX - x;
@@ -33,16 +27,17 @@ export function checkOnRuler(e) {
 }
 
 // 显示尺子
-export function handleShowRuler(x, y, isShowRuler, paintType, paintCurrentPathHistory) {
+export function handleShowRuler(x, y, ctx, isShowRuler, paintType, paintCurrentPathHistory, linePath) {
+    console.log(isShowRuler, '12');
   isShowRuler.value = !isShowRuler.value;
   paintType.value = 2;
   isDragging.value = false;
-  drawRuler(x, y);
+  drawRuler(x, y, ctx, isShowRuler);
 
   if (!isShowRuler.value) {
     // 关闭线条推入
     paintCurrentPathHistory.value = true;
-    paintPathLine("currentPathStore");
+    paintPathLine("currentPathStore", ctx, paintCurrentPathHistory, linePath);
     // 重置线条推入设置
     paintCurrentPathHistory.value = false;
   }
@@ -79,7 +74,7 @@ export function drawRuler(x, y, ctx, isShowRuler) {
   }
 }
 
-export function handleRulerMove(e, paintCurrentPathHistory) {
+export function handleRulerMove(e, rulerPosition, ctx, paintCurrentPathHistory, linePath, isShowRuler) {
   const { distanceX, distanceY } = distanceToRuler;
 
   if (isDragging.value) {
@@ -88,10 +83,10 @@ export function handleRulerMove(e, paintCurrentPathHistory) {
 
     // 关闭线条推入
     paintCurrentPathHistory.value = true;
-    paintPathLine("currentPathStore");
+    paintPathLine("currentPathStore", ctx, paintCurrentPathHistory, linePath);
     // 重置线条推入设置
     paintCurrentPathHistory.value = false;
-    drawRuler(rulerPosition.x, rulerPosition.y);
+    drawRuler(rulerPosition.x, rulerPosition.y, ctx, isShowRuler);
   }
 }
 
