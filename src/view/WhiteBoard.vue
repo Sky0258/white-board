@@ -1,18 +1,32 @@
 <template>
   <div>
-    <button @click="{ paintType = 1;}">画任意线</button>
-    <button @click="handleShowRuler(rulerPosition.x, rulerPosition.y)">直尺</button><br />
+    <button
+      @click="
+        {
+          paintType = 1;
+        }
+      "
+    >
+      画任意线
+    </button>
+    <button @click="handleShowRuler(rulerPosition.x, rulerPosition.y)">
+      直尺
+    </button>
+    <button @click="paintHistoryLine">绘制历史线</button><br />
     <canvas ref="canvasRef" width="1200" height="700"></canvas>
   </div>
 </template>
 
 <script setup>
 import { ref, reactive, onMounted } from "vue";
+import { getPathStore, addDataToStore } from "../state/index";
 const canvasRef = ref(null);
 let canvas = null;
 let ctx = null;
 let flag = false;
 let paintType = ref(1);
+let paintHistory = ref(false);
+const linePath = [];
 
 // 初始化 canvas
 function initCanvas() {
@@ -30,18 +44,46 @@ function handlePaintLineStart(e) {
   flag = true;
   ctx.beginPath();
   ctx.moveTo(e.offsetX, e.offsetY);
+  !paintHistory.value && linePath.push({
+    offsetX: e.offsetX,
+    offsetY: e.offsetY,
+  });
 }
 
 function handlePaintLineMove(e) {
   if (flag && !checkOnRuler(e)) {
     ctx.lineTo(e.offsetX, e.offsetY);
+    !paintHistory.value && linePath.push({
+      offsetX: e.offsetX,
+      offsetY: e.offsetY,
+    });
     ctx.stroke();
   }
 }
 
 function handlePaintLineEnd() {
   ctx.closePath();
+  !paintHistory.value && addDataToStore([...linePath]);
+  linePath.length = 0;
   flag = false;
+}
+
+function paintHistoryLine() {
+  paintHistory.value = true;
+  ctx.lineWidth = 5;
+  ctx.strokeStyle = "blue";
+  const oldPath = getPathStore('pathStore');
+  oldPath.forEach((item) => {
+    handlePaintLineStart(item[0]);
+    for (let i = 0; i < item.length; i++) {
+      handlePaintLineMove(item[i]);
+    }
+    handlePaintLineEnd();
+  });
+
+  ctx.lineWidth = 1;
+  ctx.strokeStyle = "black";
+  paintHistory.value = false;
 }
 
 // 2.移动尺子模块
@@ -94,7 +136,7 @@ function handleShowRuler(x, y) {
 function drawRuler(x, y) {
   // 把之前的尺子删掉
   ctx.fillStyle = "#e0e0e0";
-  ctx.fillRect(preRulerPosition.x - 1, preRulerPosition.y, 420, 90);
+  ctx.fillRect(preRulerPosition.x - 1, preRulerPosition.y, 402, 70);
 
   if (isShowRuler.value) {
     preRulerPosition.x = x;
@@ -133,6 +175,7 @@ function handleRulerMove(e) {
 
 function handleMoveRulerEnd() {
   isDragging.value = false;
+  paintHistoryLine();
 }
 
 // 3.沿着尺子画线模块
