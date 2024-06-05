@@ -28,7 +28,6 @@ export function checkOnRuler(e, rulerPosition) {
 
 // 显示尺子
 export function handleShowRuler(x, y, ctx, isShowRuler, paintType, paintCurrentPathHistory, linePath) {
-    console.log(isShowRuler, '12');
   isShowRuler.value = !isShowRuler.value;
   paintType.value = 2;
   isDragging.value = false;
