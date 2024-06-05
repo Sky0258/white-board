@@ -9,7 +9,7 @@ import {
     paintLineMove,
     paintLineEnd,
   } from "../utils/paintLine";
-  
+
 export function paintPathLine(storeName, ctx, paintCurrentPathHistory, linePath) {
   ctx.lineWidth = 5;
   ctx.strokeStyle = "blue";
@@ -27,10 +27,10 @@ export function paintPathLine(storeName, ctx, paintCurrentPathHistory, linePath)
   ctx.strokeStyle = "black";
 }
 
-export function paintHistoryLine(paintCurrentPathHistory) {
+export function paintHistoryLine(ctx, paintCurrentPathHistory, linePath) {
   // 开启线条推入
   paintCurrentPathHistory.value = false;
-  paintPathLine("historyPathStore");
+  paintPathLine("historyPathStore", ctx, paintCurrentPathHistory, linePath);
 }
 
 // 刷新前缓存

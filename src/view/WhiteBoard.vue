@@ -2,7 +2,7 @@
   <div>
     <button @click="{  paintType = 1;}">画任意线</button>
     <button @click="handleRuler">直尺</button>
-    <button @click="paintHistoryLine">绘制历史线</button><br>
+    <button @click="handlePaintHistory">绘制历史线</button><br>
     <canvas ref="canvasRef" width="1200" height="700"></canvas>
   </div>
 </template>
@@ -10,9 +10,9 @@
 <script setup>
 import { ref, reactive, onMounted } from "vue";
 import {
-  getPathStore,
+  // getPathStore,
   // addDataToStore,
-  setLocalStorageValue,
+  // setLocalStorageValue,
 } from "../state/index";
 
 import {
@@ -23,6 +23,7 @@ import {
 
 
 import { checkOnRuler, handleShowRuler, handleRulerMove, handleMoveRulerEnd } from '../modules/handleMoveRuler'
+import { paintHistoryLine, saveHistoryPath } from '../modules/handleSave'
 
 
 
@@ -83,48 +84,10 @@ function handlePaintLineEnd() {
 }
 
 // 4. 暂存模块
-function paintPathLine(storeName) {
-  ctx.lineWidth = 5;
-  ctx.strokeStyle = "blue";
-  const oldPath = getPathStore(storeName);
-  oldPath &&
-    oldPath.forEach((item) => {
-      paintLineStart(
-        ctx,
-        item[0].offsetX,
-        item[0].offsetY,
-        paintCurrentPathHistory.value,
-        linePath
-      );
-      for (let i = 0; i < item.length; i++) {
-        paintLineMove(
-          ctx,
-          item[i].offsetX,
-          item[i].offsetY,
-          paintCurrentPathHistory.value,
-          linePath
-        );
-      }
-      paintLineEnd(ctx, paintCurrentPathHistory.value, linePath);
-      linePath.length = 0;
-    });
-  ctx.lineWidth = 1;
-  ctx.strokeStyle = "black";
+function handlePaintHistory() {
+  paintHistoryLine(ctx, paintCurrentPathHistory, linePath);
 }
 
-function paintHistoryLine() {
-  // 开启线条推入
-  paintCurrentPathHistory.value = false;
-  paintPathLine("historyPathStore");
-}
-
-// 刷新前缓存
-function saveHistoryPath() {
-  const currentPath = getPathStore("currentPathStore");
-  currentPath &&
-    setLocalStorageValue("historyPathStore", JSON.stringify(currentPath));
-  setLocalStorageValue("currentPathStore", null);
-}
 
 // 2.移动尺子模块
 let isShowRuler = ref(false);
