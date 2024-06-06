@@ -4,9 +4,9 @@ import { handleRulerAround, handleRulerLineStart } from "./handleRulerLine";
 import { paintLineStart, paintLineMove, paintLineEnd } from "../utils/paintLine";
 import { checkOnRuler } from './handleMoveRuler'
 
-export function handleNormalLineStart(e, isShowRuler, ctx, paintCurrentPathHistory, linePath, rulerPosition, paintType) {
+export function handleNormalLineStart(e, isShowRuler, ctx, paintCurrentPathHistory, linePath, rulerPosition, paintType, angle) {
   if (isShowRuler.value && handleRulerAround(e, rulerPosition, paintType)) {
-    handleRulerLineStart(e, ctx, rulerPosition, paintCurrentPathHistory, linePath);
+    handleRulerLineStart(e, ctx, rulerPosition, paintCurrentPathHistory, linePath, angle);
     return;
   }
 
@@ -14,8 +14,8 @@ export function handleNormalLineStart(e, isShowRuler, ctx, paintCurrentPathHisto
   paintLineStart(ctx, e.offsetX, e.offsetY, paintCurrentPathHistory.value, linePath);
 }
 
-export function handleNormalLineMove(e, ctx, rulerPosition, paintCurrentPathHistory, linePath) {
-  if (flag && !checkOnRuler(e, rulerPosition)) {
+export function handleNormalLineMove(e, ctx, rulerPosition, paintCurrentPathHistory, linePath, paintType) {
+  if (flag && !checkOnRuler(e, rulerPosition, paintType)) {
     paintLineMove(ctx, e.offsetX, e.offsetY, paintCurrentPathHistory.value, linePath);
   }
 }

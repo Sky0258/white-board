@@ -1,14 +1,6 @@
 // 4. 暂存模块
-import {
-  getPathStore,
-  // addDataToStore,
-  setLocalStorageValue,
-} from "../state/index";
-import {
-    paintLineStart,
-    paintLineMove,
-    paintLineEnd,
-  } from "../utils/paintLine";
+import { getPathStore, setLocalStorageValue } from "../state/index";
+import { paintLineStart, paintLineMove, paintLineEnd } from "../utils/paintLine";
 
 export function paintPathLine(storeName, ctx, paintCurrentPathHistory, linePath) {
   ctx.lineWidth = 5;
