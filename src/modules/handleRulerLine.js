@@ -1,7 +1,8 @@
 // 3.沿着尺子画线模块
 import { reactive } from "vue";
 import { paintLineStart, paintLineMove, paintLineEnd } from "../utils/paintLine";
-// import { }
+import { handleShowRuler } from './handleMoveRuler'
+
 let flag = false;
 const rulerEquation = reactive({
   k: 0,
@@ -47,6 +48,7 @@ export function countVerticalPoint(x, y) {
   return targetPoint;
 }
 
+
 // 开始画吸附直线
 export function handleRulerLineStart(e, ctx, rulerPosition, paintCurrentPathHistory, linePath, angle) {
   getLineEquation(rulerPosition, angle);
@@ -58,18 +60,21 @@ export function handleRulerLineStart(e, ctx, rulerPosition, paintCurrentPathHist
 // 移动吸附直线
 export function handleRulerLineMove(e, ctx, paintCurrentPathHistory, linePath) {
   if (flag) {
-    console.log("flag 值为 true");
     const targetPoint = countVerticalPoint(e.offsetX, e.offsetY);
-    console.log(targetPoint, "targetPoint");
+    // handleInclineRulerMove(ctx, e, rulerPosition, paintCurrentPathHistory, linePath, angle);
     paintLineMove(ctx, targetPoint.x, targetPoint.y, paintCurrentPathHistory.value, linePath);
   }
 }
 
+
 // 结束吸附直线
-export function handleRulerLineEnd(ctx, paintCurrentPathHistory, linePath, paintType) {
+export function handleRulerLineEnd(ctx, paintCurrentPathHistory, linePath, paintType, isShowRuler) {
   paintLineEnd(ctx, paintCurrentPathHistory.value, linePath);
   linePath.length = 0;
   flag = false;
+  isShowRuler.value = true;
+
+  handleShowRuler(0, 0, ctx, isShowRuler, paintType, paintCurrentPathHistory, linePath);
   paintType.value = 1;
 }
 

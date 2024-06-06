@@ -79,7 +79,7 @@ onMounted(() => {
         handleRulerMove(e, rulerPosition,ctx, paintCurrentPathHistory, linePath, isShowRuler);
         break;
       case 3:
-        handleRulerLineMove(e, ctx, paintCurrentPathHistory, linePath);
+        handleRulerLineMove(e, ctx, paintCurrentPathHistory, linePath, rulerPosition, angle);
         break;
       case 4:
         handleInclineRulerMove(ctx, e, rulerPosition, paintCurrentPathHistory, linePath, angle);
@@ -94,11 +94,10 @@ onMounted(() => {
         handleNormalLineEnd(ctx, paintCurrentPathHistory, linePath);
         break;
       case 2:
-        console.log('鼠标抬起');
         handleMoveRulerEnd(paintType);
         break;
       case 3:
-        handleRulerLineEnd(ctx, paintCurrentPathHistory, linePath, paintType);
+        handleRulerLineEnd(ctx, paintCurrentPathHistory, linePath, paintType, isShowRuler);
         break;
       case 4:
         handleInclineRulerEnd(paintType);
