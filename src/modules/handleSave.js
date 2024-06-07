@@ -3,8 +3,6 @@ import { getPathStore, setLocalStorageValue } from "../state/index";
 import { paintLineStart, paintLineMove, paintLineEnd } from "../utils/paintLine";
 
 export function paintPathLine(storeName, ctx, paintCurrentPathHistory, linePath) {
-  // ctx.lineWidth = 5;
-  // ctx.strokeStyle = "blue";
   const oldPath = getPathStore(storeName);
   oldPath &&
     oldPath.forEach((item) => {
@@ -15,8 +13,6 @@ export function paintPathLine(storeName, ctx, paintCurrentPathHistory, linePath)
       paintLineEnd(ctx, paintCurrentPathHistory.value, linePath);
       linePath.length = 0;
     });
-  // ctx.lineWidth = 1;
-  // ctx.strokeStyle = "black";
 }
 
 export function paintHistoryLine(ctx, paintCurrentPathHistory, linePath) {

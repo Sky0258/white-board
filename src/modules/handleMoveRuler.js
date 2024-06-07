@@ -141,6 +141,7 @@ export function handleInclineRulerMove(ctx, e, rulerPosition, paintCurrentPathHi
   paintCurrentPathHistory.value = false;
 }
 
+// 画倾斜尺子
 function drawInclineRuler(ctx, radian, rulerPosition) {
   ctx.fillStyle = "#e0e0e0";
   ctx.fillRect(0, 0, 1200, 700); //清屏
