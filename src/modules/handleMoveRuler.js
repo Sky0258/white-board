@@ -97,6 +97,7 @@ export function drawRuler(x, y, ctx, isShowRuler, paintCurrentPathHistory, lineP
    paintCurrentPathHistory.value = false;
 }
 
+// 尺子移动
 export function handleRulerMove(e, rulerPosition, ctx, paintCurrentPathHistory, linePath, isShowRuler) {
   const { distanceX, distanceY } = distanceToRuler;
 
@@ -104,16 +105,12 @@ export function handleRulerMove(e, rulerPosition, ctx, paintCurrentPathHistory, 
     rulerPosition.x = e.offsetX - distanceX;
     rulerPosition.y = e.offsetY - distanceY;
 
-    // // 关闭线条推入
-    // paintCurrentPathHistory.value = true;
-    // paintPathLine("currentPathStore", ctx, paintCurrentPathHistory, linePath);
-    // // 重置线条推入设置
-    // paintCurrentPathHistory.value = false;
-
     drawRuler(rulerPosition.x, rulerPosition.y, ctx, isShowRuler, paintCurrentPathHistory, linePath);
   }
 }
 
+
+// 尺子移动技术
 export function handleMoveRulerEnd(paintType) {
   isDragging.value = false;
   paintType.value = 2;
@@ -152,7 +149,7 @@ function drawInclineRuler(ctx, radian, rulerPosition) {
     ctx.save();
     ctx.beginPath();
     ctx.translate(rulerPosition.x, rulerPosition.y);
-    ctx.rotate(radian); //设置矩形旋转
+    ctx.rotate(radian); //设置旋转
     ctx.closePath();
     // 绘制矩形
     ctx.fillStyle = "white";

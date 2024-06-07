@@ -18,7 +18,6 @@ export function handleRulerAround(e, rulerPosition, paintType) {
 
 // 获取尺子直线方程
 export function getLineEquation(rulerPosition, angle) {
-  //   let angle = 30; // 角度值
   rulerEquation.k = parseFloat(Math.tan((angle.value * Math.PI) / 180).toFixed(4));
   rulerEquation.b = parseFloat((rulerPosition.y - rulerEquation.k * rulerPosition.x).toFixed(4));
 }
@@ -40,7 +39,6 @@ export function countVerticalPoint(x, y) {
     const perpendicularSlope = -1 / k;
     // 计算垂线方程的截距
     const perpendicularIntercept = y - perpendicularSlope * x;
-
     targetPoint.x = (perpendicularIntercept - b) / (k - perpendicularSlope);
     targetPoint.y = k * targetPoint.x + b;
   }
